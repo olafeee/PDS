@@ -5,20 +5,23 @@
 # born Thursday 27 March 2014 A.D.				  
 #      ░░███████ ]▄▄▄▄▄▄▄▄▄ 
 #  ▂▄▄▄▅█████████▅▄▄▃▂       
-#l████████████████████].    
+#l██████████████████████].    
 #  ◥⊙▲⊙▲⊙▲⊙▲⊙▲⊙▲⊙▲⊙▲⊙◤..
 # made by Olaf Elzinga & Nick de Bruijn Van Melis En Mariekerke	 
+# import
 import getopt, sys
 import tldextract
-
-#log = open('test.log')
-log = open('passivedns_test.log')
-#log = open('passivedns_test_milione.log')
+# global vars
+log = None
+filex = open('testfile.txt','w')
 
 def main():
+    global log
+    logCheck = False
     try:
-        options, remainder = getopt.getopt(sys.argv[1:], 't:hs' # before : is for value with argu / after : no arg[litle bit strange]
+        options, remainder = getopt.getopt(sys.argv[1:], 't:l:hs' # before : is for value with argu / after : no arg[litle bit strange]
 															, ['ttl=', 
+		                                                       'log=',
 		                                                       'help',
 		                                                        'statistic',])
     except getopt.GetoptError as err:
@@ -27,13 +30,27 @@ def main():
         sys.exit()
 
     if options:
+        #print(options)
         for opt, arg in options:
-            if opt in ('-t', '--ttl'): # time to live !work in progrese!
-                TTL(arg)
+            if opt in ('-l', '--log'):
+                log = open(arg,'r')
+                logCheck = True
             elif opt in ('-h', '--help'): # help !work in progrese!
                 help()
-            elif opt in ('-s', '--statistic'):
-               statistic()
+                sys.exit()
+        if logCheck == True:
+            for opt, arg in options:   	
+                if opt in ('-t', '--ttl'): # time to live !work in progrese!
+                    TTL(arg)
+                elif opt in ('-s', '--statistic'):
+                    statistic()
+                elif opt in ('-a', '--all'):
+                    statistic()
+                    TTL(arg)
+        else:
+            print("Select a log with -l \nFor more info check --help")
+            sys.exit()
+
     else:
     	print("Give an option to run this script \nType -h for more information!")
     	sys.exit()
@@ -46,7 +63,6 @@ def statistic():
 	tldList={}
 	DNSsList = {}
 	QTList={}
-
 	for line in log:
 		array = (line.split('||')) #split each line get from passiveDNS logf ile
 		#Top Level Domain [TLD] 
@@ -81,13 +97,17 @@ def TTL(arg):
 def printList(item):
 	for key, value in item.items():
 		spaceLength = 30-len(key)
+		line = key,''.ljust(spaceLength),":", value
+
 		print(key,''.ljust(spaceLength),":", value)	
+		filex.write(str(line)+"\n")
 
 def fillList(x, y):
 	if y not in x:
 		x[y] = 1
 	else:
 		x[y] += 1
+
 if __name__ == "__main__":
     main()
 
