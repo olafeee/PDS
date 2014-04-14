@@ -3,14 +3,12 @@
 # version 1.0
 # devoleped in python v3.4
 # born Thursday 27 March 2014 A.D.				  
-#      ░░███████ ]▄▄▄▄▄▄▄▄▄ 
-#  ▂▄▄▄▅█████████▅▄▄▃▂       
-#l██████████████████████].    
-#  ◥⊙▲⊙▲⊙▲⊙▲⊙▲⊙▲⊙▲⊙▲⊙◤..
 # made by Olaf Elzinga & Nick de Bruijn Van Melis En Mariekerke	 
 # import
-import getopt, sys
+import getopt, sys, collections
 import tldextract
+import time
+
 # global vars
 log = None
 filex = open('testfile.txt','w')
@@ -62,17 +60,22 @@ def help():
 def statistic():
 	tldList={}
 	DNSsList = {}
+	DNScList = {}
 	QTList={}
 	for line in log:
 		array = (line.split('||')) #split each line get from passiveDNS logf ile
-		#Top Level Domain [TLD] 
+		print (array)
+		#Top Level Domain [TLD]
 		tld = tldextract.extract(array[4])
 		tld = tld.suffix
+		#tld = 'nl'
 		if not tld:
 			tld = "not existing"
 		fillList(tldList, tld)
 		#DNS servers involved 
 		DNSs = (array[2])
+		DNSc = (array[1])
+		fillList(DNScList, DNSc)
 		fillList(DNSsList, DNSs)
 		#Query Type [Record (e.g. A, CNAME, MX)]
 		QT = (array[5])
@@ -80,6 +83,8 @@ def statistic():
 
 	print("\nDNSserver")
 	printList(DNSsList)
+	print("\nDNSclients")
+	printList(DNScList)
 	print("\nTop Level Domains")
 	printList(tldList)
 	print("\nQuery types")
