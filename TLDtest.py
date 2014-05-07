@@ -5,29 +5,58 @@
 # tested in Mac OS X Mavericks and UBUNTU 12.04
 # born Thursday 27 March 2014 A.D.				  
 # made by Olaf Elzinga & Nick de Bruijn Van Melis En Mariekerke	
+# real comments are in english. Test comments are in dutch so when we release our tool the dutch comments will be deleted
 
-import sys, collections
+# log aanmaken met eventueel error
 
-import subprocess
+# python standard /// downloaded /// own 
+import subprocess, os, time ,sys
 import tldextract, pymysql
-import time, datetime
 from database import Database
 
 #log = open('passivedns_test.log','r')
 dateLog = '2014-05-01'
-logFile = 'test.log'
-log = open(logFile,'r')
+storeDB = True
 
 t0 = time.time()
 class Pds():
 	def __init__(self, db):
 		self.db = db
 
-	def passiveDNS_logHandler(self):
-		print(date(year))
-		subprocess.call(["df","-h"])
+	#map fucntie checke en aanmaken vind ik nog niet super. Later dus nog kijken wat er beter kan ;)
+	def passiveDNS_logHandler(self, storeDB = False):
+		year = time.strftime("%Y")
+		month = time.strftime("%B")
+		day = time.strftime("%d")
+		mapArchive = "log"
 
-	def domainGathering(self):
+		if not os.path.isdir(mapArchive+"/"+year):
+			subprocess.call(["mkdir", mapArchive+"/"+year])
+
+		if not os.path.isdir(mapArchive+"/"+year+"/"+month):
+			subprocess.call(["mkdir", mapArchive+"/"+year+"/"+month])
+		
+		if not os.path.isdir(mapArchive+"/"+year+"/"+month+"/"+day):
+			subprocess.call(["mkdir", mapArchive+"/"+year+"/"+month+"/"+day])
+			subprocess.call(["cp", "/var/log/passivedns.log", mapArchive+"/"+year+"/"+month+"/"+day+"/"])# change cp for mv
+			if storeDB==True:
+				print("wel in db opslaan")
+				logDir = mapArchive+"/"+year+"/"+month+"/"+day+"/passivedns.log"
+				log = open(logDir,'r')
+				logHandler = self.domainGathering(log, logDir)
+				print(logHandler)
+
+			else:
+				print("niet in db opslaan")#err
+
+			if logHandler:
+				subprocess.call(["gzip","-S", year+"-"+month+"-"+day+".gz", mapArchive+"/"+year+"/"+month+"/"+day+"/passivedns.log"])
+
+			#gzip -S ".`date +%s`.gz" /var/log/passivedns-archive/passivedns.log 
+		else:
+			print("map already existststs")#log file eventueel
+
+	def domainGathering(self, log, logDir):
 		#make a list to store all domains
 		data = self.db.getInfo("SELECT * FROM Domainlist")
 		domainList={}
@@ -41,7 +70,7 @@ class Pds():
 			if not tldsuffix:
 				tld = "not existing"
 			self.fillList(domainList, str(tld))
-		self.db.insertData(domainList, dateLog, logFile)
+		return self.db.insertData(domainList, dateLog, logDir)
 
 	def fillList(self, x, y):
 		if y not in x:
@@ -55,8 +84,7 @@ def main():
 	db.toggleconnect()
 	#act
 	pds = Pds(db)
-	pds.passiveDNS_logHandler()
-	#pds.domainGathering()
+	pds.passiveDNS_logHandler(storeDB)
 	#close session
 	db.disconnect()	
 	#count time of all funtions

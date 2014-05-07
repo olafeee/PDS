@@ -30,7 +30,7 @@ class Database():
 
 	# insert all domain from a log into the MySQL DB
 	# @domainList 
-	def insertData(self, domainList, dateLog, logFile):
+	def insertData(self, domainList, dateLog, logDir):
 		y = 0
 		#INSERT
 		InsertStmt = "INSERT INTO Domainlist (domain, date, logfile, count) VALUES (%s,%s,%s,%s)"
@@ -49,7 +49,7 @@ class Database():
 
 		for item in domainList.items():	
 			try:
-				self.cur.execute(InsertStmt, (item[0], dateLog, logFile, item[1]))
+				self.cur.execute(InsertStmt, (item[0], dateLog, logDir, item[1]))
 				y+=1
 			except:
 				domainDateExists = self.getInfo("SELECT count FROM Domainlist WHERE domain = %s and date = %s", (item[0] , dateLog))
@@ -63,6 +63,7 @@ class Database():
 		self.cur.execute(UpdateDomain_count, (x+y, '2014-05-01'))
 		#self.cur.executemany(stmt, domainList.items())
 		self.conn.commit()
+		return True
 
 	def deleteData(self):
 		print("oei")
