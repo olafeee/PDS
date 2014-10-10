@@ -2,10 +2,10 @@
 # PassiveDNSSearcher [PDS]
 # version 1.0
 # devoleped in python v3.4
-#requires tldextract module
+# requires tldextract module
 # born Thursday 27 March 2014 A.D.                  
 # made by Olaf Elzinga & Nick de Bruijn Van Melis En Mariekerke     
-# import
+
 import getopt, sys, collections
 import tldextract
 import time
@@ -60,8 +60,10 @@ def main():
         sys.exit()
 
 def help():
-    print("-s     :Show all info about a log file")
+    print("-s   :Show all info about a log file")
     print("-t   :Print all lines with less than Time-to-Live is specified")
+    print("-d   :check dga")
+    print("-d   :for log file")
 
 def statistic():
     tldList={}
@@ -70,7 +72,6 @@ def statistic():
     QTList={}
     for line in log:
         array = (line.split('||')) #split each line get from passiveDNS log file
-        print (array)
         #Top Level Domain [TLD]
         tld = tldextract.extract(array[4])
         tld = tld.suffix
@@ -114,12 +115,13 @@ def DGA():
         array = line.split('||')
 
         for pattern in patterns:
-            if pattern.match(array[4]):
+            query = array[4]
+            if pattern.match(query):
                 count = DGA.get(query, 0)
                 DGA[query] = count + 1
                 break
 
-    pprint(sorted(DGA.items(), key=lambda item: item[1]))
+    print(sorted(DGA.items(), key=lambda item: item[1]))
 
 def printList(item):
     for key, value in item.items():
